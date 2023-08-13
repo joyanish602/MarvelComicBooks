@@ -1,0 +1,119 @@
+﻿@using MarvelComicBooks.Models
+@using PagedList;
+@using PagedList.Mvc;
+
+@model IPagedList<ComicBook>
+
+@{
+    ViewBag.Head = "Marvel Comics";
+    ViewBag.Title = "Comic Book Search";
+}
+
+@using (Html.BeginForm("Index", "Home", FormMethod.Get))
+{
+    <div style="padding-top:20px;">
+        @Html.Label("Search Title")
+        @Html.TextBox("searchQuery")
+        <input type="submit" value="Search" />
+    </div>
+}
+
+@if (Model != null && Model.Count > 0)
+{
+    <div style="padding:10px">
+        <div style="float:left">
+            Items Per Page :
+            @Html.DropDownList("PageSize", new SelectListItem[]
+                {   new SelectListItem() { Text = "5", Value = "5" },
+                    new SelectListItem() { Text = "10", Value = "10" },
+                    new SelectListItem() { Text = "25", Value = "25" },
+                    new SelectListItem() { Text = "50", Value = "50" }
+                },
+                new { onchange = "changePageSize()" }
+                )
+        </div>
+        <div style="float:right">
+            Sort By :
+            @Html.DropDownList("SortBy", new SelectListItem[]
+                {   new SelectListItem() { Text = "A-Z", Value = "0" },
+                    new SelectListItem() { Text = "Z-A", Value = "1" }
+                }, new { onchange = "changeSortBy()" }
+                )
+        </div>
+    </div>
+
+    
+    <table class="table table-striped table-hover table-fw-widget" style="table-layout:fixed;">
+        <thead style="background-color:#ccc">
+            <tr>
+                <th class="td-wd-common">Title</th>
+                <th class="td-wd-des">Description</th>
+                <th class="td-wd-common">Price</th>
+                <th class="td-wd-common">Thumbnail</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var comicBook in Model)
+            {
+                <tr>
+                    <td class="td-wd-common">@comicBook.Title</td>
+                    <td class="td-wd-des">@Html.Raw(comicBook.Description)</td>
+                    <td class="td-wd-common">@comicBook.Price</td>
+                    <td class="td-wd-common"><img src="@comicBook.ThumbnailUrl" alt="@comicBook.Title" style="width:100px" /></td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <div style="float:right">
+        Showing : @Model.FirstItemOnPage - @Model.LastItemOnPage of @Model.TotalItemCount
+    </div>
+    <div style="text-align: center">
+        @Html.PagedListPager(Model, pageNumber => Url.Action("Index", new { pageNumber, pageSize = ViewBag.Pagination.PageSize, sortBy = ViewBag.Pagination.SortBy, searchQuery = ViewBag.Pagination.SearchQuery }))
+    </div>
+}
+else
+{
+    <p style="text-align:center">No comic books found.</p>
+}
+
+<script>
+    function changePageSize() {
+        var selectedVal = document.getElementById("PageSize").value;
+        var searchQuery = document.getElementById("searchQuery").value;
+        var sortBy = document.getElementById("SortBy").value;
+        var url = '/Home/Index?PageSize=' + selectedVal + '&SearchQuery=' + searchQuery + '&sortBy=' + sortBy;
+        document.location.href = url;
+    }
+    function changeSortBy() {
+        var selectedVal = document.getElementById("SortBy").value;
+        var searchQuery = document.getElementById("searchQuery").value;
+        var pageSize = document.getElementById("PageSize").value;
+        var url = '/Home/Index?SortBy=' + selectedVal + '&SearchQuery=' + searchQuery + '&pageSize=' + pageSize;
+        document.location.href = url;
+    }
+    //function changeComicView(changeType) {
+    //    var sortBy = "";
+    //    var pageSize = "";
+    //    if (changeType == 1) {  // pageSize
+    //        pageSize = document.getElementById("PageSize").value;
+    //    }
+    //    else if (changeType == 2) {  // sortBy
+    //        sortBy = = document.getElementById("SortBy").value;
+    //    }
+
+    //    var searchQuery = document.getElementById("searchQuery").value;
+    //    var url = '/Home/Index?SortBy=' + sortBy + '&SearchQuery=' + searchQuery + '&pageSize=' + pageSize;
+    //    document.location.href = url;
+    //}
+</script>
+
+
+<style>
+    .td-wd-common {
+        width: 20%;
+    }
+
+    .td-wd-des {
+        width: 40%;
+    }
+</style>
